@@ -1,17 +1,21 @@
 import { Levels } from './level.js';
 
 const keys = {
-  37: 'left',
-  39: 'right',
-  38: 'up',
-  40: 'down'
-}
+  ArrowDown: 'down',
+  ArrowUp: 'up',
+  ArrowLeft: 'left',
+  ArrowRight: 'right'
+};
+
 
 let currentLevel = 0;
 // Stocker une sauvegarde du niveau original dans originalGrid, puis stocker le grid de la partie dans actualGrid
 let originalGrid = Object.assign([], Levels[currentLevel]);
 let actualGrid = originalGrid.map((arr) => { return arr.slice(); });
 let playerDirection = 'down';
+let stepCount = 0;
+const collisionSound = new Audio('./sounds/huh.mp3');
+const winSound = new Audio('./sounds/win.mp3');
 
 // Fonction principale pour mettre à jour l'affichage du jeu.
 export function updateGame() {
@@ -70,14 +74,31 @@ export function updateGame() {
             } else if (playerDirection === 'right') {
               player.src = './images/sprite_9.png';
             }
+            let targets = getTargetsPosition();
+            for (let k = 0; k < targets.length; k++) {
+              if (i === targets[k][0] && j === targets[k][1]) {
+                let target = document.createElement('img');
+                target.src = './images/textures/target2.png';
+                target.style.width = '100%';
+                target.style.height = '100%';
+                target.style.position = 'absolute';
+                target.style.zIndex = '0';
+                
+                cell.appendChild(target);
+
+              }
+            }
             player.style.width = '100%';
             player.style.height = '100%';
+            player.style.position = 'absolute';
+            player.style.zIndex = '1';
             cell.appendChild(player);
             cell.style.backgroundImage = `url(./images/textures/plank.png)`;
             cell.style.backgroundSize = 'cover';
             cell.style.backgroundPosition = 'center';
             cell.classList.add('player');
-            // cell.id = 'playerCell';
+            // Si le joueur est sur une target, on ajoute l'image de la target sous celle du joueur
+            
 
           } else if (originalGrid[i][j] === 4) {
             cell.classList.add('target');
@@ -98,8 +119,8 @@ export function updateGame() {
         }
       }
       // Ajuster le canvas pour qu'il ait la largeur égale à la longueur d'un sous-array multiplié par 50, et la longueur égale à la longueur du tableau multiplié par 50, disposés en grille de pixels
-      canvas.style.width = `${actualGrid[0].length * 4}vw`;
-      canvas.style.height = `${actualGrid.length * 4}vw`;
+      canvas.style.width = '40vw';
+      canvas.style.height = '40vw';
       canvas.style.display = 'grid';
       canvas.style.gridTemplateColumns = `repeat(${actualGrid[0].length}, 4vw)`;
       canvas.style.gridTemplateRows = `repeat(${actualGrid.length}, 4vw)`;
@@ -119,15 +140,21 @@ export function updateGame() {
         }
       }
       if (win) {
+        
         if (currentLevel === Levels.length - 1) {
-          alert('You won ! There are no more levels left, congratulations !');
+          let finalWin = new Audio('./sounds/finalWin.mp3');
+          finalWin.play();
+          alert('You won ! There are no more levels left, congratulations ! Your step counter is ' + stepCount);
           return;
         }
+        winSound.play();
         currentLevel++;
         originalGrid = Object.assign([], Levels[currentLevel]);
         actualGrid = originalGrid.map((arr) => { return arr.slice(); });
         updateGame();
       }
+      // stepCount++;
+      stepCounter.textContent = 'Step counter : \n' + stepCount;
 
 }
 
@@ -155,8 +182,8 @@ function getTargetsPosition() {
   return targets;
 }
 
-
-// Fonction principale pour gérer les événements du clavier.
+// /*
+// Fonction principale pour gérer les événements du clavier. V1
 document.addEventListener('keydown', function(event) {
   // Si un mouvement est déjà en cours ou que le joueur est face à un mur, ne rien faire
   if (document.getElementById('playerFrame') !== null) {
@@ -168,8 +195,10 @@ document.addEventListener('keydown', function(event) {
   // Récupérer l'image du joueur et l'effacer
   let playerImage = document.getElementById('playerImage');
   if (playerImage !== null) {
-    playerImage.src = '';
+    playerImage.remove();
   }
+
+  // stepCount++;
   
   // Récupérer le code de la touche appuyée
   const key = event.key;
@@ -203,17 +232,20 @@ document.addEventListener('keydown', function(event) {
       } 
       // Si la case en-dessous de la box est un mur, le joueur ne peut pas pousser la box
       else if (actualGrid[playerPosition[0] + 2][playerPosition[1]] === 1) {
+        collisionSound.play();
         updateGame();
         return; 
       } 
       // Si la case en-dessous de la box contient une autre box, le joueur ne peut pas pousser la box
       else if (actualGrid[playerPosition[0] + 2][playerPosition[1]] === 2) {
+        collisionSound.play();
         updateGame();
         return;
       }
     }
     // Si la case en-dessous est un mur, le joueur ne peut pas se déplacer vers le bas
     else if (actualGrid[playerPosition[0] + 1][playerPosition[1]] === 1) {
+      collisionSound.play();
       updateGame();
       return;
     }
@@ -237,15 +269,18 @@ document.addEventListener('keydown', function(event) {
         moveBox('up', playerPosition);
       } 
       else if (actualGrid[playerPosition[0] - 2][playerPosition[1]] === 1) {
+        collisionSound.play();
         updateGame();
         return; 
       } 
       else if (actualGrid[playerPosition[0] - 2][playerPosition[1]] === 2) {
+        collisionSound.play();
         updateGame();
         return;
       }
     }
     else if (actualGrid[playerPosition[0] - 1][playerPosition[1]] === 1) {
+      collisionSound.play();
       updateGame();
       return;
     }
@@ -269,15 +304,18 @@ document.addEventListener('keydown', function(event) {
         moveBox('left', playerPosition);
       } 
       else if (actualGrid[playerPosition[0]][playerPosition[1] - 2] === 1) {
+        collisionSound.play();
         updateGame();
         return; 
       } 
       else if (actualGrid[playerPosition[0]][playerPosition[1] - 2] === 2) {
+        collisionSound.play();
         updateGame();
         return;
       }
     }
     else if (actualGrid[playerPosition[0]][playerPosition[1] - 1] === 1) {
+      collisionSound.play();
       updateGame();
       return;
     }
@@ -301,200 +339,99 @@ document.addEventListener('keydown', function(event) {
         moveBox('right', playerPosition);
       } 
       else if (actualGrid[playerPosition[0]][playerPosition[1] + 2] === 1) {
+        collisionSound.play();
         updateGame();
         return; 
       } 
       else if (actualGrid[playerPosition[0]][playerPosition[1] + 2] === 2) {
+        collisionSound.play();
         updateGame();
         return;
       }
     }
     else if (actualGrid[playerPosition[0]][playerPosition[1] + 1] === 1) {
+      collisionSound.play();
       updateGame();
       return;
     }
   }
+  stepCount++;
   setTimeout(() => {
   updateGame();
   } , 600);
 });
+// */
 
-// Player movement animation
+// /*
+// Player movement animation V2 :
 function movePlayer(direction, playerPosition) {
+  let verticalOffset = 0;
+  let horizontalOffset = 0;
+  let base = 0;
   if (direction === 'down') {
-    // Parcourir les 3 sprites du joueur en mouvement vers le bas 0, 1, 2, en déplaçant le joueur 1/3 de la hauteur de la cellule à chaque sprite, avec un intervalle de 100ms entre chaque sprite
-    let playerFrame;
-    for (let i = 0; i < 3; i++) {
-      setTimeout(() => {
-        if (playerFrame !== undefined) {
-          playerFrame.remove();
-        }
-        playerFrame = document.createElement('img');
-        playerFrame.src = `./images/sprite_${i}.png`;
-        playerFrame.style.width = '4vw';
-        playerFrame.style.height = '4vw';
-        playerFrame.style.position = 'absolute';
-        playerFrame.style.top = `${(playerPosition[0] * 4) + (i * (1.33))}vw`;
-        playerFrame.style.left = `${playerPosition[1] * 4}vw`;
-        playerFrame.style.zIndex = '1';
-        playerFrame.id = 'playerFrame';
-        document.getElementById('game').appendChild(playerFrame);
-        playerDirection = 'down';
-
-      }, 200 * i);
-    }
-  } 
-  else if (direction === 'up') {
-    let playerFrame;
-    for (let i = 3; i < 6; i++) {
-      setTimeout(() => {
-        if (playerFrame !== undefined) {
-          playerFrame.remove();
-        }
-        playerFrame = document.createElement('img');
-        playerFrame.src = `./images/sprite_${i}.png`;
-        playerFrame.style.width = '4vw';
-        playerFrame.style.height = '4vw';
-        playerFrame.style.position = 'absolute';
-        playerFrame.style.top = `${(playerPosition[0] * 4) - ((i-3) * (1.33))}vw`;
-        playerFrame.style.left = `${playerPosition[1] * 4}vw`;
-        playerFrame.style.zIndex = '1';
-        playerFrame.id = 'playerFrame';
-        document.getElementById('game').appendChild(playerFrame);
-        playerDirection = 'up';
-
-      }, 200 * (i - 3));
-    }
+    verticalOffset = 1;
+  } else if (direction === 'up') {
+    verticalOffset = -1;
+    base = 3;
+  } else if (direction === 'left') {
+    horizontalOffset = -1;
+    base = 6;
+  } else if (direction === 'right') {
+    horizontalOffset = 1;
+    base = 9;
   }
-  else if (direction === 'left') {
-    let playerFrame;
-    for (let i = 6; i < 9; i++) {
-      setTimeout(() => {
-        if (playerFrame !== undefined) {
-          playerFrame.remove();
-        }
-        playerFrame = document.createElement('img');
-        playerFrame.src = `./images/sprite_${i}.png`;
-        playerFrame.style.width = '4vw';
-        playerFrame.style.height = '4vw';
-        playerFrame.style.position = 'absolute';
-        playerFrame.style.top = `${playerPosition[0] * 4}vw`;
-        playerFrame.style.left = `${(playerPosition[1] * 4) - ((i-6) * (1.33))}vw`;
-        playerFrame.style.zIndex = '1';
-        playerFrame.id = 'playerFrame';
-        document.getElementById('game').appendChild(playerFrame);
-        playerDirection = 'left';
-
-      }, 200 * (i - 6));
-    }
-  }
-  else if (direction === 'right') {
-    let playerFrame;
-    for (let i = 9; i < 12; i++) {
-      setTimeout(() => {
-        if (playerFrame !== undefined) {
-          playerFrame.remove();
-        }
-        playerFrame = document.createElement('img');
-        playerFrame.src = `./images/sprite_${i}.png`;
-        playerFrame.style.width = '4vw';
-        playerFrame.style.height = '4vw';
-        playerFrame.style.position = 'absolute';
-        playerFrame.style.top = `${playerPosition[0] * 4}vw`;
-        playerFrame.style.left = `${(playerPosition[1] * 4) + ((i-9) * (1.33))}vw`;
-        playerFrame.style.zIndex = '1';
-        playerFrame.id = 'playerFrame';
-        document.getElementById('game').appendChild(playerFrame);
-        playerDirection = 'right';
-
-      }, 200 * (i - 9));
-    }
+  let playerFrame;
+  for (let i = base; i < (3+base); i++) {
+    setTimeout(() => {
+      if (playerFrame !== undefined) {
+        playerFrame.remove();
+      }
+      playerFrame = document.createElement('img');
+      playerFrame.src = `./images/sprite_${i}.png`;
+      playerFrame.style.width = '4vw';
+      playerFrame.style.height = '4vw';
+      playerFrame.style.position = 'absolute';
+      playerFrame.style.top = `${(playerPosition[0] * 4) + (verticalOffset * 4) + (verticalOffset * 1.33 * (i - base -2 ))}vw`;
+      playerFrame.style.left = `${(playerPosition[1] * 4) + (horizontalOffset * 4) + (horizontalOffset * 1.33 * (i - base - 2))}vw`;
+      playerFrame.style.zIndex = '1';
+      playerFrame.id = 'playerFrame';
+      document.getElementById('game').appendChild(playerFrame);
+      playerDirection = direction;
+    }, 200 * (i - base));
   }
 }
+// */
 
 function moveBox(direction, playerPosition) {
+  let verticalOffset = 0;
+  let horizontalOffset = 0;
   if (direction === 'down') {
-    let boxFrame;
-    for (let i = 0; i < 3; i++) {
-      setTimeout(() => {
-        if (boxFrame !== undefined) {
-          boxFrame.remove();
-        }
-        boxFrame = document.createElement('img');
-        boxFrame.src = `./images/box.png`;
-        boxFrame.style.width = '4vw';
-        boxFrame.style.height = '4vw';
-        boxFrame.style.position = 'absolute';
-        boxFrame.style.top = `${((playerPosition[0] * 4) + 4) + (i * (1.33))}vw`;
-        boxFrame.style.left = `${playerPosition[1] * 4}vw`;
-        boxFrame.style.zIndex = '1';
-        boxFrame.id = 'boxFrame';
-        document.getElementById('game').appendChild(boxFrame);
-      }, 200 * i);
-    }
+    verticalOffset = 1;
+  } else if (direction === 'up') {
+    verticalOffset = -1;
+  } else if (direction === 'left') {
+    horizontalOffset = -1;
+  } else if (direction === 'right') {
+    horizontalOffset = 1;
   }
-  else if (direction === 'up') {
-    let boxFrame;
-    for (let i = 0; i < 3; i++) {
-      setTimeout(() => {
-        if (boxFrame !== undefined) {
-          boxFrame.remove();
-        }
-        boxFrame = document.createElement('img');
-        boxFrame.src = `./images/box.png`;
-        boxFrame.style.width = '4vw';
-        boxFrame.style.height = '4vw';
-        boxFrame.style.position = 'absolute';
-        boxFrame.style.top = `${((playerPosition[0] * 4) - 4) - (i * (1.33))}vw`;
-        boxFrame.style.left = `${playerPosition[1] * 4}vw`;
-        boxFrame.style.zIndex = '1';
-        boxFrame.id = 'boxFrame';
-        document.getElementById('game').appendChild(boxFrame);
-      }, 200 * i);
-    }
+  let boxFrame;
+  for (let i = 0; i < 3; i++) {
+    setTimeout(() => {
+      if (boxFrame !== undefined) {
+        boxFrame.remove();
+      }
+      boxFrame = document.createElement('img');
+      boxFrame.src = `./images/box.png`;
+      boxFrame.style.width = '4vw';
+      boxFrame.style.height = '4vw';
+      boxFrame.style.position = 'absolute';
+      boxFrame.style.top = `${(playerPosition[0] * 4) + (verticalOffset * 4) + (verticalOffset * 1.33 * i)}vw`;
+      boxFrame.style.left = `${(playerPosition[1] * 4) + (horizontalOffset * 4) + (horizontalOffset * 1.33 * i)}vw`;
+      boxFrame.style.zIndex = '1';
+      boxFrame.id = 'boxFrame';
+      document.getElementById('game').appendChild(boxFrame);
+    }, 200 * i);
   }
-  else if (direction === 'left') {
-    let boxFrame;
-    for (let i = 0; i < 3; i++) {
-      setTimeout(() => {
-        if (boxFrame !== undefined) {
-          boxFrame.remove();
-        }
-        boxFrame = document.createElement('img');
-        boxFrame.src = `./images/box.png`;
-        boxFrame.style.width = '4vw';
-        boxFrame.style.height = '4vw';
-        boxFrame.style.position = 'absolute';
-        boxFrame.style.top = `${playerPosition[0] * 4}vw`;
-        boxFrame.style.left = `${((playerPosition[1] * 4) - 4) - (i * (1.33))}vw`;
-        boxFrame.style.zIndex = '1';
-        boxFrame.id = 'boxFrame';
-        document.getElementById('game').appendChild(boxFrame);
-      }, 200 * i);
-    }
-  }
-  else if (direction === 'right') {
-    let boxFrame;
-    for (let i = 0; i < 3; i++) {
-      setTimeout(() => {
-        if (boxFrame !== undefined) {
-          boxFrame.remove();
-        }
-        boxFrame = document.createElement('img');
-        boxFrame.src = `./images/box.png`;
-        boxFrame.style.width = '4vw';
-        boxFrame.style.height = '4vw';
-        boxFrame.style.position = 'absolute';
-        boxFrame.style.top = `${playerPosition[0] * 4}vw`;
-        boxFrame.style.left = `${((playerPosition[1] * 4) + 4) + (i * (1.33))}vw`;
-        boxFrame.style.zIndex = '1';
-        boxFrame.id = 'boxFrame';
-        document.getElementById('game').appendChild(boxFrame);
-      }, 200 * i);
-    }
-  }
-
-  
 }
 
 function getPlayerPosition() {
@@ -511,7 +448,51 @@ function getPlayerPosition() {
 export function setupInterface() {
   const startBox = createStartBox();
   handleStartEvent(startBox);
+  const resetButton = createResetButton();
+  const stepCounter = document.createElement('div');
+  const stepCount = document.createElement('p');
+  // const remapKeysMenuButton = document.createElement('button');
+  // remapKeysMenuButton.id = 'remapKeysMenuButton';
+  stepCounter.id = 'stepCounter';
+  stepCounter.textContent = 'Step counter : ';
+  stepCount.textContent = stepCount;
+  stepCounter.appendChild(stepCount);
+  document.body.appendChild(stepCounter);
+  resetButton.addEventListener('click', () => {
+    originalGrid = Object.assign([], Levels[currentLevel]);
+    actualGrid = originalGrid.map((arr) => { return arr.slice(); });
+    updateGame();
+  });
+  // remapKeysMenuButton.textContent = 'Remap keys';
+  // document.body.appendChild(remapKeysMenuButton);
+  // remapKeysMenuButton.addEventListener('click', () => {
+  //   remapKeysMenu();
+  // });
 }
+
+// function remapKeysMenu() {
+//   const remapKeysMenu = document.createElement('div');
+//   remapKeysMenu.id = 'remapKeysMenu';
+//   remapKeysMenu.textContent = 'Press the key you want to remap to the left arrow key';
+//   document.body.appendChild(remapKeysMenu);
+//   const rightKey = document.createElement('div');
+//   const rightKeyCurrent = document.createElement('p');
+  
+//   rightKey.id = 'rightKey';
+//   rightKey.textContent = 'Click here to remap the right arrow key';
+//   rightKeyCurrent.id = 'rightKeyCurrent';
+//   rightKeyCurrent.textContent = 'Right move key currently mapped to ' + keys['ArrowRight'];
+
+//   document.body.appendChild(rightKey); 
+//   document.body.appendChild(rightKeyCurrent);
+//   rightKey.addEventListener('click', () => {
+//     document.addEventListener('keydown', (e) => {
+//       keys['ArrowRight'] = e.key;
+//       rightKeyCurrent.textContent = 'Right move key currently mapped to ' + keys['ArrowRight'];
+//     });
+//   });
+// }
+
 
 // Crée une fenêtre d'accueil invitant le joueur à appuyer sur une touche pour commencer le jeu.
 function createStartBox() {
@@ -522,18 +503,26 @@ function createStartBox() {
   return startBox;
 }
 
+function createResetButton() {
+  const resetButton = document.createElement('button');
+  resetButton.id = 'resetButton';
+  resetButton.textContent = 'Reset';
+  document.body.appendChild(resetButton);
+  return resetButton;
+}
+
 // Gère l'événement de démarrage du jeu.
 function handleStartEvent(startBox) {
-  document.addEventListener('keydown', (e) => {
+  // Définir une fonction pour masquer startBox et supprimer les écouteurs d'événements
+  function startGame() {
     startBox.style.display = 'none';
     // updateGame();
-    // Supprimer l'écouteur d'événement pour éviter que le jeu ne commence à chaque touche pressée
-    startBox.remove();
-    
-  });
-  document.addEventListener('click', (e) => {
-    startBox.style.display = 'none';
-    // updateGame();
-    startBox.remove();
-  });
+    // Supprimer les écouteurs d'événements
+    document.removeEventListener('keydown', startGame);
+    document.removeEventListener('click', startGame);
+  }
+
+  // Ajouter les écouteurs d'événements avec la fonction startGame comme gestionnaire
+  document.addEventListener('keydown', startGame);
+  document.addEventListener('click', startGame);
 }
