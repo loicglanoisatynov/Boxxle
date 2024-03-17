@@ -1,11 +1,12 @@
 import { Levels } from './level.js';
 
 const keys = {
-  ArrowDown: 'down',
-  ArrowUp: 'up',
-  ArrowLeft: 'left',
-  ArrowRight: 'right'
+  ArrowUp: 'ArrowUp',
+  ArrowDown: 'ArrowDown',
+  ArrowLeft: 'ArrowLeft',
+  ArrowRight: 'ArrowRight',
 };
+
 
 
 let currentLevel = 0;
@@ -201,12 +202,12 @@ document.addEventListener('keydown', function(event) {
   // stepCount++;
   
   // Récupérer le code de la touche appuyée
-  const key = event.key;
+  const input = event.key;
   let playerPosition = getPlayerPosition();
   console.log('playerPosition : ');
   console.log(playerPosition);
   // Exécuter le code approprié en fonction de la touche appuyée
-  if (key === 'ArrowDown') {
+  if (input === keys.ArrowDown) {
     // Si la case en-dessous du joueur est vide ou contient une target vide, le joueur se déplace vers le bas
     if (actualGrid[playerPosition[0] + 1][playerPosition[1]] === 0 || actualGrid[playerPosition[0] + 1][playerPosition[1]] === 4) {
       
@@ -250,7 +251,7 @@ document.addEventListener('keydown', function(event) {
       return;
     }
   }
-  else if (key === 'ArrowUp') {
+  else if (input === keys.ArrowUp) {
     if (actualGrid[playerPosition[0] - 1][playerPosition[1]] === 0 || actualGrid[playerPosition[0] - 1][playerPosition[1]] === 4) {
       actualGrid[playerPosition[0]][playerPosition[1]] = 0;
       actualGrid[playerPosition[0] - 1][playerPosition[1]] = 3;
@@ -285,7 +286,7 @@ document.addEventListener('keydown', function(event) {
       return;
     }
   }
-  else if (key === 'ArrowLeft') {
+  else if (input === keys.ArrowLeft) {
     if (actualGrid[playerPosition[0]][playerPosition[1] - 1] === 0 || actualGrid[playerPosition[0]][playerPosition[1] - 1] === 4) {
       actualGrid[playerPosition[0]][playerPosition[1]] = 0;
       actualGrid[playerPosition[0]][playerPosition[1] - 1] = 3;
@@ -320,7 +321,7 @@ document.addEventListener('keydown', function(event) {
       return;
     }
   }
-  else if (key === 'ArrowRight') {
+  else if (input === keys.ArrowRight) {
     if (actualGrid[playerPosition[0]][playerPosition[1] + 1] === 0 || actualGrid[playerPosition[0]][playerPosition[1] + 1] === 4) {
       actualGrid[playerPosition[0]][playerPosition[1]] = 0;
       actualGrid[playerPosition[0]][playerPosition[1] + 1] = 3;
@@ -451,8 +452,7 @@ export function setupInterface() {
   const resetButton = createResetButton();
   const stepCounter = document.createElement('div');
   const stepCount = document.createElement('p');
-  // const remapKeysMenuButton = document.createElement('button');
-  // remapKeysMenuButton.id = 'remapKeysMenuButton';
+  
   stepCounter.id = 'stepCounter';
   stepCounter.textContent = 'Step counter : ';
   stepCount.textContent = stepCount;
@@ -463,35 +463,120 @@ export function setupInterface() {
     actualGrid = originalGrid.map((arr) => { return arr.slice(); });
     updateGame();
   });
-  // remapKeysMenuButton.textContent = 'Remap keys';
-  // document.body.appendChild(remapKeysMenuButton);
-  // remapKeysMenuButton.addEventListener('click', () => {
-  //   remapKeysMenu();
-  // });
+  
+  const remapKeysMenuButton = document.createElement('button');
+  remapKeysMenuButton.id = 'remapKeysMenuButton';
+  remapKeysMenuButton.textContent = 'Remap keys';
+  document.body.appendChild(remapKeysMenuButton);
+  remapKeysMenuButton.addEventListener('click', () => {
+    remapKeysMenu();
+  });
 }
 
-// function remapKeysMenu() {
-//   const remapKeysMenu = document.createElement('div');
-//   remapKeysMenu.id = 'remapKeysMenu';
-//   remapKeysMenu.textContent = 'Press the key you want to remap to the left arrow key';
-//   document.body.appendChild(remapKeysMenu);
-//   const rightKey = document.createElement('div');
-//   const rightKeyCurrent = document.createElement('p');
-  
-//   rightKey.id = 'rightKey';
-//   rightKey.textContent = 'Click here to remap the right arrow key';
-//   rightKeyCurrent.id = 'rightKeyCurrent';
-//   rightKeyCurrent.textContent = 'Right move key currently mapped to ' + keys['ArrowRight'];
 
-//   document.body.appendChild(rightKey); 
-//   document.body.appendChild(rightKeyCurrent);
-//   rightKey.addEventListener('click', () => {
-//     document.addEventListener('keydown', (e) => {
-//       keys['ArrowRight'] = e.key;
-//       rightKeyCurrent.textContent = 'Right move key currently mapped to ' + keys['ArrowRight'];
-//     });
-//   });
-// }
+function remapKeysMenu() {
+
+  const remapKeysMenu = document.createElement('div');
+  remapKeysMenu.id = 'remapKeysMenu';
+  remapKeysMenu.textContent = 'Keys remapping menu';
+  document.body.appendChild(remapKeysMenu);
+  console.log('Current keys : ');
+  console.log(keys);
+
+  const keysSection = document.createElement('div');
+  keysSection.id = 'keysSection';
+  keysSection.textContent = 'Keys';
+  remapKeysMenu.appendChild(keysSection);
+
+  // Créer une sous-section pour chaque touche
+  const upKeySection = document.createElement('div');
+  upKeySection.id = 'upKeySection';
+  upKeySection.textContent = 'Up key';
+  upKeySection.classList.add('keySection');
+  keysSection.appendChild(upKeySection);
+  const upKeyInput = document.createElement('button');
+  upKeyInput.id = 'ArrowUpInput';
+  upKeyInput.textContent = keys.ArrowUp;
+  upKeyInput.classList.add('keyInput');
+  upKeySection.appendChild(upKeyInput);
+  upKeyInput.addEventListener('click', () => {
+    // remapKeysMenu.remove();
+    remapKey('ArrowUp');
+  });
+
+  const downKeySection = document.createElement('div');
+  downKeySection.id = 'downKeySection';
+  downKeySection.textContent = 'Down key';
+  downKeySection.classList.add('keySection');
+  keysSection.appendChild(downKeySection);
+  const downKeyInput = document.createElement('button');
+  downKeyInput.id = 'ArrowDownInput';
+  downKeyInput.textContent = keys.ArrowDown;
+  downKeyInput.classList.add('keyInput');
+  downKeySection.appendChild(downKeyInput);
+  downKeyInput.addEventListener('click', () => {
+    // remapKeysMenu.remove();
+    remapKey('ArrowDown');
+  });
+
+  const leftKeySection = document.createElement('div');
+  leftKeySection.id = 'leftKeySection';
+  leftKeySection.textContent = 'Left key';
+  leftKeySection.classList.add('keySection');
+  keysSection.appendChild(leftKeySection);
+  const leftKeyInput = document.createElement('button');
+  leftKeyInput.id = 'ArrowLeftInput';
+  leftKeyInput.textContent = keys.ArrowLeft;
+  leftKeyInput.classList.add('keyInput');
+  leftKeySection.appendChild(leftKeyInput);
+  leftKeyInput.addEventListener('click', () => {
+    // remapKeysMenu.remove();
+    remapKey('ArrowLeft');
+  });
+
+  const rightKeySection = document.createElement('div');
+  rightKeySection.id = 'rightKeySection';
+  rightKeySection.textContent = 'Right key';
+  rightKeySection.classList.add('keySection');
+  keysSection.appendChild(rightKeySection);
+  const rightKeyInput = document.createElement('button');
+  rightKeyInput.id = 'ArrowRightInput';
+  rightKeyInput.textContent = keys.ArrowRight;
+  rightKeyInput.classList.add('keyInput');
+  rightKeySection.appendChild(rightKeyInput);
+  rightKeyInput.addEventListener('click', () => {
+    // remapKeysMenu.remove();
+    remapKey('ArrowRight');
+  });
+
+  const remapKeysMenuCloseButton = document.createElement('button');
+  remapKeysMenuCloseButton.id = 'remapKeysMenuCloseButton';
+  remapKeysMenuCloseButton.textContent = 'Close';
+  remapKeysMenu.appendChild(remapKeysMenuCloseButton);
+
+  remapKeysMenuCloseButton.addEventListener('click', () => {
+    remapKeysMenu.remove();
+  });
+}
+
+function remapKey(key) {
+  const remapKeyMenu = document.createElement('div');
+  remapKeyMenu.id = 'remapKeyMenu';
+  remapKeyMenu.textContent = `Press a key to remap ${key}`;
+  document.body.appendChild(remapKeyMenu);
+
+  function keydownHandler(event) {
+    keys[key] = event.key;
+    remapKeyMenu.remove();
+    document.getElementById(`${key}Input`).textContent = keys[key];
+    // Supprimer l'écouteur d'événements keydown après remappage de la touche
+    document.removeEventListener('keydown', keydownHandler);
+    // remapKeysMenu();
+  }
+
+  // Ajouter l'écouteur d'événements keydown
+  document.addEventListener('keydown', keydownHandler);
+}
 
 
 // Crée une fenêtre d'accueil invitant le joueur à appuyer sur une touche pour commencer le jeu.
