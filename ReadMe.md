@@ -4,7 +4,7 @@ Boxxle est un jeu de puzzle où le joueur doit déplacer des caisses sur un plat
 
 2. [Installation](#installation)
 
-(Il est nécessaire d'avoir wsl, git, npm, node et python3 installés sur votre machine pour pouvoir installer le jeu)
+(Il est nécessaire d'avoir wsl, git, et python3 installés sur votre machine pour pouvoir installer le jeu)
 
 Pour installer le jeu, les étapes à suivre sont les suivantes :
 
