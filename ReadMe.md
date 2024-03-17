@@ -21,7 +21,7 @@ Pour lancer le jeu, les étapes à suivre sont les suivantes :
 - Depuis le dossier du jeu, lancez le serveur :
 $ &>/dev/null python3 -m http.server 8080
 - Ouvrez un navigateur web et entrez l'adresse suivante dans la barre de recherche :
-http://localhost:8080/index.html
+http://localhost:8080/Boxxle/
 (Si le jeu ne se lance pas, lancez VSCode, installez l'extension Live Server, ouvrez le dossier du jeu, puis cliquez sur `Go Live` en bas à droite de l'écran, puis allez sur votre navigateur et entrez localhost:5500 dans la barre de recherche)
 
 Bon jeu !
